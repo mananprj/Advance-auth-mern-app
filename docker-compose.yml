@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:4.4
+    container_name: advance-auth-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - advance-auth-network
+  
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: advance-auth-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - PRODUCTION="false"
+    volumes:
+      - /src/app/node_modules
+      - ./backend:/src/app
+    networks:
+      - advance-auth-network
+    depends_on:
+      - mongo
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: advance-auth-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_PRODUCTION="false"
+    volumes:
+      - /src/app/node_modules
+      - ./frontend:/src/app
+    networks:
+      - advance-auth-network
+    depends_on:
+      - backend
+  
+networks:
+  advance-auth-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+  node_modules:
